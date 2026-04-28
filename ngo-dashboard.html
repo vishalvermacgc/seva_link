@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NGO Dashboard - SevaLink AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="nav-brand mb-4" style="margin-bottom: 3rem;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-blue)" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+        SevaLink AI
+      </div>
+      <nav>
+        <div class="nav-item">📊 Overview</div>
+        <div class="nav-item active">📝 Post Need</div>
+        <div class="nav-item">📋 Managed Tasks</div>
+        <a href="index.html" class="nav-item" style="margin-top: 2rem;">🏠 Back to Home</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="flex justify-between items-center mb-4">
+        <h1>NGO Command Center</h1>
+        <span class="badge badge-blue" id="ngo-name-badge">Loading...</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-1 gap-4">
+        
+        <!-- Post Need Section -->
+        <div class="card animate-fade-in">
+          <h2 class="mb-2">Smart Requirement Form</h2>
+          <p class="text-secondary mb-4" style="font-size: 0.9rem;">Paste messy field reports below. Our AI will extract the necessary details.</p>
+          
+          <div class="form-group">
+            <label class="form-label">Raw Field Notes</label>
+            <textarea id="raw-notes" class="form-control" rows="5" placeholder="e.g. We urgently need 5 doctors at Dharavi transit camp today due to outbreak..."></textarea>
+          </div>
+
+          <div class="flex gap-2 mb-4">
+            <button class="btn btn-outline" onclick="analyzeAI()">✨ Analyze with AI</button>
+          </div>
+
+          <div id="ai-results" style="display: none; background: rgba(66,133,244,0.05); padding: 1rem; border-radius: var(--radius-md); border: 1px dashed var(--primary-blue);" class="mb-4 animate-slide-up">
+            <h4 class="mb-2 text-primary">AI Extraction Results:</h4>
+            <div class="flex gap-2 flex-wrap mb-2">
+              <span class="badge badge-red" id="ext-urgency">Urgency: High</span>
+              <span class="badge badge-blue" id="ext-location">Location: Dharavi</span>
+              <span class="badge badge-green" id="ext-skills">Skills: Medical</span>
+            </div>
+            <div class="form-group mt-2">
+              <label class="form-label" style="font-size: 0.85rem">Extracted Title</label>
+              <input type="text" id="ext-title" class="form-control" value="Medical assistance required at Dharavi">
+            </div>
+            <button class="btn btn-primary w-full" onclick="publishTask()" style="width: 100%">Publish to Landing Page</button>
+          </div>
+        </div>
+
+        <!-- Managed Tasks Section -->
+        <div class="animate-fade-in delay-100">
+          <h2 class="mb-4">My Posted Needs</h2>
+          <div id="ngo-tasks-container" class="flex flex-col gap-2">
+            <!-- NGO Tasks injected here -->
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    // --- Mock AI Logic ---
+    let currentExtractedData = null;
+
+    function analyzeAI() {
+      const text = document.getElementById('raw-notes').value;
+      if (!text.trim()) {
+        alert("Please paste some text first.");
+        return;
+      }
+      
+      const btn = document.querySelector('button[onclick="analyzeAI()"]');
+      btn.innerHTML = 'Analyzing...';
+      btn.disabled = true;
+
+      // Simulate AI Delay
+      setTimeout(() => {
+        // Mock extraction logic based on keywords
+        const lowerText = text.toLowerCase();
+        let urgency = 'Medium';
+        let skills = ['General'];
+        let location = 'Local Area';
+
+        if (lowerText.includes('urgent') || lowerText.includes('critical')) urgency = 'High';
+        if (lowerText.includes('doctor') || lowerText.includes('medical')) skills = ['Medical', 'First Aid'];
+        if (lowerText.includes('dharavi')) location = 'Dharavi, Mumbai';
+        if (lowerText.includes('food')) skills = ['Logistics', 'Distribution'];
+
+        currentExtractedData = {
+          title: `Assistance required at ${location}`,
+          category: skills[0],
+          location: location,
+          urgency: urgency,
+          skills: skills,
+          ngoName: 'My NGO Admin'
+        };
+
+        // Update UI
+        document.getElementById('ext-urgency').textContent = `Urgency: ${urgency}`;
+        document.getElementById('ext-urgency').className = `badge ${getUrgencyBadgeClass(urgency)}`;
+        document.getElementById('ext-location').textContent = `Location: ${location}`;
+        document.getElementById('ext-skills').textContent = `Skills: ${skills.join(', ')}`;
+        document.getElementById('ext-title').value = currentExtractedData.title;
+        
+        document.getElementById('ai-results').style.display = 'block';
+        btn.innerHTML = '✨ Analyze with AI';
+        btn.disabled = false;
+        
+        showToast("AI Extraction Complete!");
+      }, 1500);
+    }
+
+    function publishTask() {
+      if (!currentExtractedData) return;
+      
+      // Allow overriding title
+      currentExtractedData.title = document.getElementById('ext-title').value;
+      
+      addTask(currentExtractedData);
+      
+      // Reset form
+      document.getElementById('raw-notes').value = '';
+      document.getElementById('ai-results').style.display = 'none';
+      currentExtractedData = null;
+      
+      showToast("Task Published Successfully!");
+      renderNGOTasks();
+    }
+
+    function removeNGOTask(taskId) {
+      deleteTask(taskId);
+      renderNGOTasks();
+      showToast("Task Removed.");
+    }
+
+    function renderNGOTasks() {
+      const container = document.getElementById('ngo-tasks-container');
+      const user = getUser();
+      const currentNgoName = user.ngoProfile ? user.ngoProfile.name : 'Unverified NGO';
+      
+      // Filter tasks to only show this NGO's tasks
+      const tasks = getTasks().filter(t => t.ngoName === currentNgoName); 
+      
+      if (tasks.length === 0) {
+        container.innerHTML = '<div class="card text-center text-secondary">No active tasks.</div>';
+        return;
+      }
+      container.innerHTML = tasks.map(task => generateCardHTML(task, false, true)).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = getUser();
+      document.getElementById('ngo-name-badge').textContent = user.ngoProfile ? user.ngoProfile.name : 'Unverified NGO';
+      renderNGOTasks();
+    });
+  </script>
+</body>
+</html>

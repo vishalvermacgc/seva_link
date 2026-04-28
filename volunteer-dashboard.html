@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Volunteer Dashboard - SevaLink AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="nav-brand mb-4" style="margin-bottom: 3rem;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-green)" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>
+        SevaLink AI
+      </div>
+      
+      <div class="card mb-4" style="background: linear-gradient(135deg, rgba(52, 168, 83, 0.1), transparent); border: none;">
+        <div style="font-size: 0.85rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Total Impact Points</div>
+        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary-green); display: flex; align-items: center; gap: 0.5rem;">
+          <span id="impact-points-display">0</span> 🌟
+        </div>
+      </div>
+
+      <nav>
+        <div class="nav-item active">🎯 Available Missions</div>
+        <div class="nav-item">🏆 My Achievements</div>
+        <div class="nav-item">⚙️ Profile Settings</div>
+        <a href="index.html" class="nav-item" style="margin-top: 2rem;">🏠 Back to Home</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="flex justify-between items-center mb-4">
+        <h1 id="volunteer-greeting">Volunteer Portal</h1>
+        <div class="flex gap-1 items-center">
+          <span style="font-size: 0.85rem; color: var(--text-secondary)">Your Skills:</span>
+          <span id="volunteer-skills-container" class="flex gap-1"></span>
+        </div>
+      </div>
+
+      <div class="animate-fade-in">
+        <h2 class="mb-4">Recommended Missions</h2>
+        <div id="volunteer-tasks-container" class="grid grid-cols-2 md:grid-cols-1 gap-4">
+          <!-- Cards injected here -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+    function updateImpactPointsUI() {
+      const user = getUser();
+      document.getElementById('impact-points-display').textContent = user.impactPoints || 0;
+    }
+
+    function renderVolunteerCards() {
+      const container = document.getElementById('volunteer-tasks-container');
+      const tasks = getTasks();
+      
+      if (tasks.length === 0) {
+        container.innerHTML = '<div class="card text-center text-secondary" style="grid-column: 1 / -1;">No missions available at the moment. You are all caught up!</div>';
+        return;
+      }
+      container.innerHTML = tasks.map(task => generateCardHTML(task, true, false)).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateImpactPointsUI();
+      
+      const user = getUser();
+      
+      // Update Name
+      if (user.volunteerProfile && user.volunteerProfile.name) {
+        document.getElementById('volunteer-greeting').textContent = `Hello, ${user.volunteerProfile.name.split(' ')[0]}! 👋`;
+      }
+      
+      // Update Skills
+      const skillsContainer = document.getElementById('volunteer-skills-container');
+      if (user.skills && user.skills.length > 0) {
+        skillsContainer.innerHTML = user.skills.map(s => `<span class="badge badge-blue">${s}</span>`).join('');
+      } else {
+        skillsContainer.innerHTML = `<span class="badge badge-blue">General</span>`;
+      }
+
+      renderVolunteerCards();
+    });
+  </script>
+</body>
+</html>
