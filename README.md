@@ -187,4 +187,7 @@ By combining **AI, real-time data, maps, and volunteer networks**, we envision a
 
 SevaLink AI is built with a simple goal:
 
-**Turn every community report into meaningful action.**
+**Turn every community report into meaningful action
+
+CAN YOU LINK MY BROTHER: -
+https://sevahublink.netlify.app/
